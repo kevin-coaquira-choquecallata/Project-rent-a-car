@@ -13,32 +13,31 @@ class RegisterController extends Controller
 {
     public function showRegistrationForm()
     {
-        //Formulario que tenemos en resource/views/auth/register.blade.php
         return view('auth.register');
     }
     public function register(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|confirmed|min:8',
-            ]);
-            //Crear usuario
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-            ]);
-            Auth::login($user);
-            $user->sendEmailVerificationNotification();
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|confirmed|min:8',
+        ]);
 
-            //Redirigir al login
-            return redirect('/dashboard');
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-            ], 500);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        Auth::login($user);
+        $user->sendEmailVerificationNotification();
+
+        return redirect('/dashboard');
     }
 }

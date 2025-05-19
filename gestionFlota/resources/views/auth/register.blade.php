@@ -1,16 +1,27 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @push('styles')
     <!-- asset te lleva a la carpeta /public -->
     <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
 @endpush
 
+@if(session('status'))
+    <div class="alert alert-success">
+        {{ session('status') }}
+    </div>
+@endif
+@if($errors->any())
+    <div class="alert alert-danger">
+        {{ $errors->first() }}
+    </div>
+@endif
+
 @section('content')
     <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
         <div class="login-card text-center mt-5" style="width: 1000px;">
             <img src="/imagenes/logoCar.jpg" alt="Logo" class="logo rounded-circle"
                 style="width: 190px; height: 190px; object-fit: cover;">
-            <h4 class="text-success mb-3">CUSTOMER PORTAL | REGISTER</h4>
+            <h4 class="text-success mb-3">REGISTRARSE</h4>
 
             <form method="POST" action="{{ route('register') }}">
                 @csrf

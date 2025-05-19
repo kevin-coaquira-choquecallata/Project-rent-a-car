@@ -1,7 +1,20 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 @push('styles')
     <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
 @endpush
+
+@if(session('status'))
+    <div class="alert alert-success">
+        {{ session('status') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger">
+        {{ $errors->first() }}
+    </div>
+@endif
+
 
 @section('content')
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
@@ -9,7 +22,7 @@
             <img src="/imagenes/logoCar.jpg" alt="Logo" class="logo rounded-circle"
                 style="width: 190px; height: 190px; object-fit: cover;">
 
-        <h4 class="text-primary mb-3">CUSTOMER PORTAL | LOGIN</h4>
+        <h4 class="text-primary mb-3">INICIAR SESSION</h4>
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
