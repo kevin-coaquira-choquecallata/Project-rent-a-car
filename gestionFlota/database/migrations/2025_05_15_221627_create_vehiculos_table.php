@@ -13,11 +13,13 @@ return new class extends Migration
             $table->string('marca');
             $table->string('modelo');
             $table->string('matricula')->unique();
-            $table->enum('estado',['alquilado','devuelto'])->default('devuelto');
+            $table->enum('estado',['alquilado','devuelto','taller','reparado','esperando piezas',])->default('devuelto');
+            $table->boolean('listo_entrega')->default(false);
             $table->boolean('sucio')->default(false);
             $table->boolean('sin_gasolina')->default(false);
             $table->boolean('en_taller')->default(false);
             $table->string('combustible');
+            $table->text('observaciones')->nullable();
             $table->string('imagen')->nullable();
             $table->timestamps();
         });

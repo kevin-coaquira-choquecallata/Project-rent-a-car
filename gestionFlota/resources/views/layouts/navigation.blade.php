@@ -9,18 +9,39 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 @auth
-                    @if(Auth::user()->role && Auth::user()->role->nombre === 'admin')
+                    <!--<li class="nav-item">
+                        <a class="nav-link" href="{{ route('dashboard') }}">Inicio</a>
+                    </li>-->
+                    @if (Auth::user()->role && Auth::user()->role->nombre === 'admin')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('admin.usuarios') }}">Admin</a>
                         </li>
                     @endif
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('dashboard') }}">Inicio</a>
-                    </li>
+                    @if ((Auth::user()->role && Auth::user()->role->nombre === 'oficina') || Auth::user()->role->nombre === 'admin')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('oficina.mecanico') }}">Vehículos en taller</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('oficina.pendientes') }}">Pendientes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('parking.index') }}">Parking</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('historial.index') }}">
+                                <i class="bi bi-clock-history me-1"></i> Historial
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('oficina.sinplaza') }}">
+                                <i class="bi bi-box-arrow-in-down me-1"></i> Listos sin plaza
+                            </a>
+                        </li>
+                    @endif
                 @endauth
-                <li class="nav-item">
+                <!--<li class="nav-item">
                     <a class="nav-link" href="{{ url('/') }}">Catálogo</a>
-                </li>
+                </li>-->
             </ul>
 
             <ul class="navbar-nav ms-auto">

@@ -1,68 +1,76 @@
-@extends('layouts.guest')
-@push('styles')
-    <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
-@endpush
-
-@if(session('status'))
-    <div class="alert alert-success">
-        {{ session('status') }}
-    </div>
-@endif
-
-@if($errors->any())
-    <div class="alert alert-danger">
-        {{ $errors->first() }}
-    </div>
-@endif
-
+@extends('layouts.login')
 
 @section('content')
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
-    <div class="login-card text-center mt-5" style="width: 1000px;">
-            <img src="/imagenes/logoCar.jpg" alt="Logo" class="logo rounded-circle"
-                style="width: 190px; height: 190px; object-fit: cover;">
+<style>
 
-        <h4 class="text-primary mb-3">INICIAR SESSION</h4>
+    .bg-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        min-width: 100%;
+        min-height: 100%;
+        object-fit: cover;
+        z-index: -1;
+    }
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .login-box {
+        background-color: rgba(0, 0, 0, 0.75);
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        color: #fff;
+        width: 100%;
+        max-width: 400px;
+    }
+    .btn-yellow {
+        background-color: #ffc107;
+        border: none;
+        font-weight: bold;
+    }
+</style>
+
+<video autoplay muted loop class="bg-video">
+    <source src="{{ asset('storage/spaceLogin.mp4') }}" type="video/mp4">
+    Tu navegador no soporta videos HTML5.
+</video>
+
+<div class="login-container">
+    <div class="login-box">
+        <h3 class="text-center mb-4">Iniciar Sesión</h3>
+
+        @if (session('status'))
+            <div class="alert alert-danger">{{ session('status') }}</div>
+        @endif
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
-            <div class="mb-3 text-start">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" required autofocus>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo electrónico</label>
+                <input type="email" id="email" name="email" class="form-control" required autofocus />
             </div>
 
-            <div class="mb-3 text-start">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" id="password" name="password" class="form-control" required />
             </div>
 
-            <div class="mb-3 form-check text-start">
-                <input type="checkbox" class="form-check-input" name="remember" id="remember">
-                <label class="form-check-label" for="remember">Remember me</label>
+            <div class="form-check mb-3">
+                <input type="checkbox" name="remember" class="form-check-input" id="remember">
+                <label class="form-check-label" for="remember">Recordarme</label>
             </div>
 
-            <div class="d-grid mb-3">
-                <button type="submit" class="btn btn-primary">LOGIN</button>
-            </div>
+            <button type="submit" class="btn btn-yellow w-100">Entrar</button>
 
-            <div class="mb-2">
-                <hr>
-                <span>OR</span>
+            <div class="text-center mt-3">
+                <small>¿No tienes cuenta? <a href="{{ route('register') }}" class="text-warning">Regístrate</a></small>
             </div>
-
-            <a href="{{ route('register') }}" class="btn btn-success w-100">REGISTER</a>
         </form>
     </div>
 </div>
-
-<div class="footer-notes text-center">
-    <strong>NOTES:</strong><br>
-    - Enter your email and password to start your session.<br>
-    - Do not share your credentials.<br>
-    - Unauthorized access is prohibited.
-</div>
-
-<footer class="text-center text-white py-2" style="background-color: #61a60e;">
-    &copy; {{ date('Y') }} Gestión de Flota. All rights reserved.
-</footer>
 @endsection

@@ -12,7 +12,9 @@ class VehiculoSeeder extends Seeder
     private array $matriculasGeneradas = [];
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Vehiculo::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
         $vehiculos = [
             ['marca' => 'Ford', 'modelo' => 'Fiesta', 'matricula'=>'1234NBB', 'combustible' =>'Gasolina', 'imagen' => 'vehiculos/ford-fiesta.jpg'],
             ['marca' => 'Ford', 'modelo' => 'Fiesta', 'matricula'=>'4321MNB', 'combustible' =>'Diesel','imagen'=> 'vehiculos/ford-fiesta.jpg'],

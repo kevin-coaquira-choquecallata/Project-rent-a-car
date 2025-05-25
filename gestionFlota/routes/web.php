@@ -10,6 +10,9 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\OficinaController;
 use App\Http\Controllers\LavaderoController;
+use App\Http\Controllers\MecanicoController;
+use App\Http\Controllers\ParkingController;
+use App\Http\Controllers\HistorialController;
 
 /*Route::get('/', function () {
     return view('welcome');
@@ -37,7 +40,7 @@ Route::get('/test-email', function () {
     }
 });
 //Vehiculo 
-Route::get('/',[CatalogoController::class,'index']);
+//Route::get('/',[CatalogoController::class,'index']);
 
 Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/usuarios', [UserManagementController::class, 'index'])->name('admin.usuarios');
@@ -82,10 +85,27 @@ Route::put('/oficina/{id}', [OficinaController::class, 'actualizar'])->name('ofi
 Route::middleware(['auth'])->group(function(){
     Route::get('/oficina',[OficinaController::class,'index'])->name('oficina.index');
     Route::put('/oficina/{id}',[OficinaController::class, 'actualizar'])->name('oficina.actualizar');
+    Route::get('/oficina/mecanico', [App\Http\Controllers\OficinaController::class, 'verMecanico'])->name('oficina.mecanico');
+    Route::get('/oficina/pendientes', [OficinaController::class, 'verPendientes'])->name('oficina.pendientes');
+    Route::get('/oficina/sin-plaza',[OficinaController::class,'verListosSinPlaza'])->name('oficina.sinplaza');
 });
 //Lavadero
 Route::middleware(['auth'])->group(function () {
     Route::get('/lavadero', [LavaderoController::class, 'index'])->name('lavadero.index');
     Route::put('/lavadero/{id}', [LavaderoController::class, 'actualizar'])->name('lavadero.actualizar');
+});
+//Mecanico 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mecanico', [MecanicoController::class, 'index'])->name('mecanico.index');
+    Route::put('/mecanico/{vehiculo}', [MecanicoController::class, 'actualizar'])->name('mecanico.actualizar');
+});
+//Parking
+Route::get('/parking', [ParkingController::class, 'index'])->name('parking.index');
+Route::put('/parking/{id}/alquilar',[ParkingController::class,'alquilar'])->name('parking.alquilar');
+Route::get('/parking/alquilados',[ParkingController::class,'alquilados'])->name('parking.alquilados');
+Route::put('/parking/{id}/devolucion',[ParkingController::class,'devolucion'])->name('parking.devolucion');
+//Historial
+Route::middleware(['auth'])->group(function(){
+    Route::get('/historial',[HistorialController::class,'index'])->name('historial.index');
 });
 
