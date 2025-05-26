@@ -9,11 +9,19 @@ use Illuminate\Http\Request;
 
 class UserManagementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $usuarios = User::with('role')->get();
+        $busqueda = $request->input('busqueda');
+
+        $usuarios = User::with('role')
+            ->when($busqueda, function ($query) use ($busqueda) {
+                $query->where(function ($q) use ($busqueda) {
+                    $q->where('name', 'like', "%$busqueda%")
+                        ->orWhere('email', 'like', "%$busqueda%");
+                });
+            })->get();
         $roles = Role::all();
-        return view('admin.usuarios.index', compact('usuarios','roles'));
+        return view('admin.usuarios.index', compact('usuarios', 'roles', 'busqueda'));
     }
 
     public function actualizarRol(Request $request, User $user)
@@ -29,10 +37,10 @@ class UserManagementController extends Controller
     }
     public function eliminar(User $user)
     {
-        if(auth() === $user->id){
-            return back()->with('status','No puedes eliminarte a ti mismo');
+        if (auth() === $user->id) {
+            return back()->with('status', 'No puedes eliminarte a ti mismo');
         }
         $user->delete();
-        return redirect()->route('admin.usuarios')->with('status','Usuario eliminado correctamente');
+        return redirect()->route('admin.usuarios')->with('status', 'Usuario eliminado correctamente');
     }
 }

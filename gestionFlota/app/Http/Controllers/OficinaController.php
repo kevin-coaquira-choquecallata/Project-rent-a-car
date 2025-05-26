@@ -18,27 +18,27 @@ class OficinaController extends Controller
             abort(403, 'Acceso no autorizado');
         }
         $query = Vehiculo::where('estado', 'devuelto')
-            ->where('sucio',false)
-            ->where('sin_gasolina',false)
+            ->where('sucio', false)
+            ->where('sin_gasolina', false)
             ->whereDoesntHave('parking');
-            //->whereNotNull('listo_entrega');
-            //->whereHas('parking');
-            //->where(function ($q){
-                //$q->where('sucio',false)
-                //->orWhere('sin_gasolina',false);
-            //});
-            //->where('sucio', false)
-            //->where('sin_gasolina', false);
-            //->where('listo_entrega',true);
-            //->whereHas('parking');
-            //->where('estado','!=','esperando piezas')
-            //->get();
-        if($request->filled('busqueda')){
+        //->whereNotNull('listo_entrega');
+        //->whereHas('parking');
+        //->where(function ($q){
+        //$q->where('sucio',false)
+        //->orWhere('sin_gasolina',false);
+        //});
+        //->where('sucio', false)
+        //->where('sin_gasolina', false);
+        //->where('listo_entrega',true);
+        //->whereHas('parking');
+        //->where('estado','!=','esperando piezas')
+        //->get();
+        if ($request->filled('busqueda')) {
             $busqueda = $request->input('busqueda');
-            $query->where(function ($q) use ($busqueda){
-                $q->where('matricula','like',"%$busqueda%")
-                    ->orWhere('modelo','like',"%$busqueda%")
-                    ->orWhere('marca','like',"%$busqueda%");
+            $query->where(function ($q) use ($busqueda) {
+                $q->where('matricula', 'like', "%$busqueda%")
+                    ->orWhere('modelo', 'like', "%$busqueda%")
+                    ->orWhere('marca', 'like', "%$busqueda%");
             });
         }
         $vehiculos = $query->get();
@@ -65,18 +65,18 @@ class OficinaController extends Controller
 
         $accion = 'actualizado desde Oficina';
         $observaciones = "";
-        if($vehiculo->sucio){
+        if ($vehiculo->sucio) {
             $observaciones .= "Marcado como sucio<br>";
         }
-        if($vehiculo->sin_gasolina){
+        if ($vehiculo->sin_gasolina) {
             $observaciones .= "Marcado sin gasolina <br>";
         }
-        if($vehiculo->observaciones){
-            $observaciones .= "Notas: " .e($vehiculo->observaciones) . '<br>';
+        if ($vehiculo->observaciones) {
+            $observaciones .= "Notas: " . e($vehiculo->observaciones) . '<br>';
         }
 
         HistorialMovimiento::create([
-            'vehiculo_id' =>$vehiculo->id,
+            'vehiculo_id' => $vehiculo->id,
             'usuario_id' => Auth::id(),
             'accion' => $accion,
             'observaciones' => $observaciones,
@@ -95,31 +95,76 @@ class OficinaController extends Controller
 
         return view('oficina.mecanico', compact('vehiculosMecanico'));
     }
-    public function verPendientes()
+    public function verPendientes(Request $request)
     {
         $user = Auth::user();
         if (!$user || !$user->role || !in_array($user->role->nombre, ['oficina', 'admin'])) {
             abort(403, 'Acceso no autorizado');
         }
+        $busqueda = $request->input('busqueda');
 
-        $vehiculosPendientes = Vehiculo::where(function ($query) {
-            $query->where('sucio', true)
+        $query = Vehiculo::where(function ($q) {
+            $q->where('sucio', true)
                 ->orWhere('sin_gasolina', true)
                 ->orWhereIn('estado', ['taller', 'esperando piezas']);
-        })->get();
+        });
 
-        return view('oficina.pendientes', compact('vehiculosPendientes'));
+        if ($busqueda) {
+            $query->where(function ($q) use ($busqueda) {
+                $q->where('matricula', 'like', "%$busqueda%")
+                    ->orWhere('modelo', 'like', "%$busqueda%")
+                    ->orWhere('marca', 'like', "%$busqueda%");
+            });
+        }
+
+        $vehiculos = $query->get();
+
+        $plazasLibres = Parking::whereNull('vehiculo_id')->get();
+
+        return view('oficina.pendientes', compact('vehiculos', 'plazasLibres', 'busqueda'));
     }
-    public function verListosSinPlaza()
+    public function verListosSinPlaza(Request $request)
     {
         $user = Auth::user();
 
-        if(!$user || !$user->role || !in_array($user->role->nombre,['oficina','admin'])){
-            abort(403,'Acceso no autorizad');
+        if (!$user || !$user->role || !in_array($user->role->nombre, ['oficina', 'admin'])) {
+            abort(403, 'Acceso no autorizad');
         }
-        $vehiculosListosSinPlaza = Vehiculo::where('listo_entrega',true)
-            ->whereDoesntHave('parking')
-            ->get();
-        return view('oficina.sinplaza',compact('vehiculosListosSinPlaza'));
+        $busqueda = $request->input('busqueda');
+
+        $query = Vehiculo::where('listo_entrega', true)
+            ->whereDoesntHave('parking');
+
+        if ($busqueda) {
+            $query->where(function ($q) use ($busqueda) {
+                $q->where('matricula', 'like', "%$busqueda%")
+                    ->orWhere('modelo', 'like', "%$busqueda%")
+                    ->orWhere('marca', 'like', "%$busqueda%");
+            });
+        }
+        $vehiculosListosSinPlaza = $query->get();
+
+        return view('oficina.sinplaza', compact('vehiculosListosSinPlaza', 'busqueda'));
+    }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'matricula' => 'required|unique:vehiculos',
+            'marca' => 'required',
+            'modelo' => 'required',
+            'combustible' => 'required|in:Gasolina,Diesel,Hibrido,Electrico',
+        ]);
+        $vehiculo = new Vehiculo();
+        $vehiculo->matricula = $request->matricula;
+        $vehiculo->marca = $request->marca;
+        $vehiculo->modelo = $request->modelo;
+        $vehiculo->combustible = $request->combustible;
+        $vehiculo->estado = 'devuelto';
+        $vehiculo->sucio = false;
+        $vehiculo->sin_gasolina = false;
+
+        $vehiculo->save();
+
+        return redirect()->route('oficina.index')->with('Hecho', 'Vehículo añadido correctamente.');
     }
 }

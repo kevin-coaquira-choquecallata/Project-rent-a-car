@@ -17,6 +17,10 @@ use App\Http\Controllers\HistorialController;
 /*Route::get('/', function () {
     return view('welcome');
 });*/
+Route::get('/',function(){
+    return redirect('/login');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -45,9 +49,8 @@ Route::get('/test-email', function () {
 Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/usuarios', [UserManagementController::class, 'index'])->name('admin.usuarios');
     Route::post('/admin/usuarios/{user}/actualizar-rol', [UserManagementController::class, 'actualizarRol'])->name('admin.usuarios.actualizar');
+    Route::delete('/admin/usuarios/{user}',[UserManagementController::class,'eliminar'])->name('admin.usuarios.eliminar');
 });
-//Borrar usuario solo admin puede 
-Route::delete('/admin/usuarios/{user}',[UserManagementController::class,'eliminar'])->name('admin.usuarios.eliminar');
 //View inicio 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
@@ -88,6 +91,7 @@ Route::middleware(['auth'])->group(function(){
     Route::get('/oficina/mecanico', [App\Http\Controllers\OficinaController::class, 'verMecanico'])->name('oficina.mecanico');
     Route::get('/oficina/pendientes', [OficinaController::class, 'verPendientes'])->name('oficina.pendientes');
     Route::get('/oficina/sin-plaza',[OficinaController::class,'verListosSinPlaza'])->name('oficina.sinplaza');
+    Route::post('/oficina/vehiculos',[OficinaController::class,'store'])->name('oficina.vehiculos.store');
 });
 //Lavadero
 Route::middleware(['auth'])->group(function () {

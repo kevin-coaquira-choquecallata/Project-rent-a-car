@@ -1,63 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <div class="bg-light p-3 rounded mb-4 border d-flex justify-content-center align-items-center">
-            <h1 class="mb-0 fw-bold text-dark display-6 d-flex align-items-center">
-                <i class="bi bi-car-front me-2 text-primary"></i>Vehiculos Pendiente de Limpieza o en Taller
-            </h1>
+<div class="container">
+    <div class="bg-light p-3 rounded mb-4 border d-flex justify-content-center align-items-center">
+        <h1 class="mb-0 fw-bold text-dark display-6 d-flex align-items-center">
+            <i class="bi bi-bucket me-2 text-primary"></i> Vehículos pendientes (visual)
+        </h1>
+    </div>
+
+    <form method="GET" action="{{ route('oficina.pendientes') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="busqueda" class="form-control" placeholder="Buscar por matrícula, modelo o marca"
+                value="{{ request('busqueda') }}">
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
         </div>
+    </form>
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Matrícula</th>
-                    <th>Modelo</th>
-                    <th>Estado</th>
-                    <th>Sucio</th>
-                    <th>Sin gasolina</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($vehiculosPendientes as $vehiculo)
-                    <tr>
-                        <td>{{ $vehiculo->matricula }}</td>
-                        <td>{{ $vehiculo->marca }} {{ $vehiculo->modelo }}</td>
-                        <td>
-                            @switch($vehiculo->estado)
-                                @case('taller')
-                                    <span class="badge bg-danger">Taller</span>
-                                @break
-
-                                @case('esperando piezas')
-                                    <span class="badge bg-warning text-dark">Esperando piezas</span>
-                                @break
-
-                                @default
-                                    <span class="badge bg-secondary">{{ ucfirst($vehiculo->estado) }}</span>
-                            @endswitch
-                        </td>
-                        <td>
-                            @if ($vehiculo->sucio)
-                                <span class="badge bg-warning text-dark">Sí</span>
-                            @else
-                                <span class="badge bg-success">No</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($vehiculo->sin_gasolina)
-                                <span class="badge bg-warning text-dark">Sí</span>
-                            @else
-                                <span class="badge bg-success">No</span>
-                            @endif
-                        </td>
-                    </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5">No hay vehículos pendientes.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    @if ($vehiculos->isEmpty())
+        <div class="alert alert-{{ request('busqueda') ? 'warning' : 'info' }} text-center">
+            {{ request('busqueda')
+                ? 'No se encontraron vehículos con “' . request('busqueda') . '”.'
+                : 'No hay vehículos pendientes de limpiar o repostar.'
+            }}
         </div>
-    @endsection
+    @else
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Sucio</th>
+                                <th>Sin gasolina</th>
+                                <th>Plaza asignada</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($vehiculos as $vehiculo)
+                                <tr>
+                                    <td>{{ $vehiculo->matricula }}</td>
+                                    <td>{{ $vehiculo->marca }}</td>
+                                    <td>{{ $vehiculo->modelo }}</td>
+                                    <td class="text-center">
+                                        {{ $vehiculo->sucio ? 'Sí' : 'No' }}
+                                    </td>
+                                    <td class="text-center">
+                                        {{ $vehiculo->sin_gasolina ? 'Sí' : 'No' }}
+                                    </td>
+                                    <td>
+                                        {{ $vehiculo->parking ? 'Plaza #' . $vehiculo->parking->numero_plaza : '—' }}
+                                    </td>
+                                    <td>{{ $vehiculo->observaciones ?? '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>
+@endsection

@@ -9,10 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class ParkingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $plazas = \App\Models\Parking::with('vehiculo')->get();
-        return view('parking.index',compact('plazas'));
+        $busqueda = $request->input('busqueda');
+
+        $plazas = \App\Models\Parking::with('vehiculo')
+            ->when($busqueda, function ($query) use ($busqueda) {
+                $query->whereHas('vehiculo', function ($q) use ($busqueda) {
+                    $q->where('matricula', 'like', "%$busqueda%")
+                        ->orWhere('modelo', 'like', "%$busqueda%")
+                        ->orWhere('marca', 'like', "%$busqueda%");
+                });
+            })
+            ->get();
+        return view('parking.index', compact('plazas', 'busqueda'));
     }
     public function alquilar($id)
     {
@@ -22,7 +32,7 @@ class ParkingController extends Controller
         $vehiculo->listo_entrega = false;
 
         $plaza = $vehiculo->parking;
-        if($plaza){
+        if ($plaza) {
             $plaza->vehiculo_id = null;
             $plaza->save();
         }
@@ -35,7 +45,7 @@ class ParkingController extends Controller
             'accion' => 'Vehiculo alquilado',
             'observaciones' => 'Vehiculo alquilado y plaza liberada. ',
         ]);
-        return redirect()->route('parking.index')->with('Hecho','Vehiculo alquilado correctamente');
+        return redirect()->route('parking.index')->with('Hecho', 'Vehiculo alquilado correctamente');
     }
     public function devolucion($id)
     {
@@ -55,11 +65,20 @@ class ParkingController extends Controller
             'observaciones' => 'Vehiculo devuelto. Hacer check-in',
         ]);
 
-        return redirect()->route('parking.alquilados')->with('Hecho','Vehiculo devuelto correctamente');
+        return redirect()->route('parking.alquilados')->with('Hecho', 'Vehiculo devuelto correctamente');
     }
-    public function alquilados()
+    public function alquilados(Request $request)
     {
-        $vehiculos = Vehiculo::where('estado','alquilado')->get();
-        return view('parking.alquilados',compact('vehiculos'));
+        $busqueda = $request->input('busqueda');
+
+        $vehiculos = Vehiculo::where('estado', 'alquilado')
+            ->when($busqueda, function ($query) use ($busqueda) {
+                $query->where(function ($q) use ($busqueda) {
+                    $q->where('matricula', 'like', "%$busqueda%")
+                        ->orWhere('modelo', 'like', "%$busqueda%")
+                        ->orWhere('marca', 'like', "%$busqueda%");
+                });
+            })->get();
+        return view('parking.alquilados', compact('vehiculos', 'busqueda'));
     }
 }
