@@ -149,10 +149,13 @@ class OficinaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'matricula' => 'required|unique:vehiculos',
-            'marca' => 'required',
-            'modelo' => 'required',
-            'combustible' => 'required|in:Gasolina,Diesel,Hibrido,Electrico',
+            'matricula' => ['required', 'regex:/^[0-9]{4}[B-DF-HJ-NP-TV-Z]{3}$/i', 'unique:vehiculos,matricula'],
+            'marca' => ['required', 'string', 'max:50'],
+            'modelo' => ['required', 'string', 'max:50'],
+            'combustible' => ['required', 'in:Gasolina,Diesel,Hibrido,Electrico'],
+        ], [
+            'matricula.regex' => 'La matricula debe tener 4 numeros seguidos de 3 letras (sin vocales)',
+            'matricula.unique' => 'Ya existe un vehiculo con esa matricula',
         ]);
         $vehiculo = new Vehiculo();
         $vehiculo->matricula = $request->matricula;
@@ -166,5 +169,11 @@ class OficinaController extends Controller
         $vehiculo->save();
 
         return redirect()->route('oficina.index')->with('Hecho', 'Vehículo añadido correctamente.');
+    }
+    public function destroy(Vehiculo $vehiculo)
+    {
+        $vehiculo->delete();
+
+        return redirect()->route('oficina.index')->with('Hecho', 'Vehículo eliminado correctamente.');
     }
 }

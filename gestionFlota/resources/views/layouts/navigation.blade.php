@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url('/') }}">Gestión Flota</a>
+        <a class="navbar-brand">Gestión Flota</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegación">
             <span class="navbar-toggler-icon"></span>
@@ -39,6 +39,11 @@
                                 <i class="bi bi-box-arrow-in-down me-1"></i> Listos sin plaza
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('oficina.index') }}">
+                                <i class="bi bi-house-door me-1"></i> Oficina
+                            </a>
+                        </li>
                     @endif
                 @endauth
             </ul>
@@ -57,7 +62,6 @@
                             {{ Auth::user()->name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Perfil</a></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf

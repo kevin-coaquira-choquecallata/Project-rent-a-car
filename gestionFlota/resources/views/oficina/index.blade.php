@@ -13,7 +13,7 @@
                 {{ session('Hecho') }}
             </div>
         @endif
-        {{-- Botón para abrir el modal --}}
+
         <div class="d-flex justify-content-end mb-3">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevoVehiculo">
                 <i class="bi bi-plus-circle me-1"></i> Añadir vehículo
@@ -34,15 +34,32 @@
                         <div class="modal-body row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Matrícula</label>
-                                <input type="text" name="matricula" class="form-control" required>
+                                <input type="text" name="matricula" class="form-control" required
+                                    pattern="[0-9]{4}[B-DF-HJ-NP-TV-Z]{3}"
+                                    title="Formato válido: 4 números seguidos de 3 letras (sin vocales)">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Marca</label>
-                                <input type="text" name="marca" class="form-control" required>
+                                <select name="marca" class="form-select" id="marca" required>
+                                    <option value="">Selecciona una marca</option>
+                                    <option value="Ford">Ford</option>
+                                    <option value="Volkswagen">Volkswagen</option>
+                                    <option value="Toyota">Toyota</option>
+                                    <option value="Renault">Renault</option>
+                                    <option value="Peugeot">Peugeot</option>
+                                    <option value="Seat">Seat</option>
+                                    <option value="Opel">Opel</option>
+                                    <option value="Citroën">Citroën</option>
+                                </select>
+                                @error('marca')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Modelo</label>
-                                <input type="text" name="modelo" class="form-control" required>
+                                <select name="modelo" class="form-select" id="modelo" required>
+                                    <option value="">Selecciona un modelo</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Combustible</label>
@@ -64,7 +81,7 @@
             </div>
         </div>
 
-
+        {{-- Buscador --}}
         <form method="GET" action="{{ route('oficina.index') }}" class="mb-4">
             <div class="input-group">
                 <input type="text" name="busqueda" class="form-control"
@@ -73,6 +90,7 @@
             </div>
         </form>
 
+        {{-- Tabla de vehículos --}}
         @if ($vehiculos->isEmpty())
             @if (request('busqueda'))
                 <div class="alert alert-warning text-center">
@@ -103,45 +121,46 @@
                             <tbody>
                                 @foreach ($vehiculos as $vehiculo)
                                     <tr>
+                                        <td>{{ $vehiculo->matricula }}</td>
+                                        <td>{{ $vehiculo->marca }}</td>
+                                        <td>{{ $vehiculo->modelo }}</td>
                                         <form action="{{ route('oficina.actualizar', $vehiculo->id) }}" method="POST">
                                             @csrf
                                             @method('PUT')
-                                            <td>{{ $vehiculo->matricula }}</td>
-                                            <td>{{ $vehiculo->marca }}</td>
-                                            <td>{{ $vehiculo->modelo }}</td>
                                             <td>
                                                 <select name="estado" class="form-select form-select-sm">
-                                                    <option value="devuelto"
-                                                        {{ $vehiculo->estado == 'devuelto' ? 'selected' : '' }}>Devuelto
-                                                    </option>
-                                                    <option value="alquilado"
-                                                        {{ $vehiculo->estado == 'alquilado' ? 'selected' : '' }}>Alquilado
-                                                    </option>
-                                                    <option value="taller"
-                                                        {{ $vehiculo->estado == 'taller' ? 'selected' : '' }}>Taller
-                                                    </option>
+                                                    <option value="devuelto" {{ $vehiculo->estado == 'devuelto' ? 'selected' : '' }}>Devuelto</option>
+                                                    <option value="alquilado" {{ $vehiculo->estado == 'alquilado' ? 'selected' : '' }}>Alquilado</option>
+                                                    <option value="taller" {{ $vehiculo->estado == 'taller' ? 'selected' : '' }}>Taller</option>
                                                 </select>
                                             </td>
                                             <td class="text-center">
-                                                <input type="checkbox" name="sucio"
-                                                    {{ $vehiculo->sucio ? 'checked' : '' }}>
+                                                <input type="checkbox" name="sucio" {{ $vehiculo->sucio ? 'checked' : '' }}>
                                             </td>
                                             <td class="text-center">
-                                                <input type="checkbox" name="sin_gasolina"
-                                                    {{ $vehiculo->sin_gasolina ? 'checked' : '' }}>
+                                                <input type="checkbox" name="sin_gasolina" {{ $vehiculo->sin_gasolina ? 'checked' : '' }}>
                                             </td>
                                             <td>
-                                                <input type="text" name="observaciones"
-                                                    class="form-control form-control-sm" placeholder="Observaciones..."
-                                                    value="{{ $vehiculo->observaciones }}">
+                                                <input type="text" name="observaciones" class="form-control form-control-sm"
+                                                    value="{{ $vehiculo->observaciones }}" placeholder="Observaciones...">
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-success" type="submit">
-                                                    <i class="bi bi-send"></i> Enviar
-                                                </button>
-                                            </td>
+                                                <div class="d-flex gap-2">
+                                                    <button class="btn btn-sm btn-success" type="submit">
+                                                        <i class="bi bi-send"></i> Enviar
+                                                    </button>
                                         </form>
-                                    </tr>
+                                        <form action="{{ route('oficina.vehiculos.destroy', $vehiculo->id) }}" method="POST"
+                                              onsubmit="return confirm('¿Estás seguro de que quieres eliminar este vehículo?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
                                 @endforeach
                             </tbody>
                         </table>

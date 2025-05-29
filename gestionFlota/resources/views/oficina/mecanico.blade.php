@@ -12,7 +12,7 @@
         <div class="input-group">
             <input type="text" name="busqueda" class="form-control" placeholder="Buscar por matrícula, modelo o marca"
                 value="{{ request('busqueda') }}">
-            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+            <button class="btn btn-outline-primary" type="submit">Buscar</button>
         </div>
     </form>
 

@@ -19,18 +19,18 @@ class LavaderoController extends Controller
         }
 
         $query = Vehiculo::where(function ($q) {
-            $q->where(function ($inner){
+            $q->where(function ($inner) {
                 $inner->whereIn('estado', ['devuelto', 'reparado'])
-                ->where(function ($c) {
-                    $c->where('sucio', true)
-                        ->orWhere('sin_gasolina', true)
-                        ->orWhere('estado', 'reparado');
-                });
+                    ->where(function ($c) {
+                        $c->where('sucio', true)
+                            ->orWhere('sin_gasolina', true)
+                            ->orWhere('estado', 'reparado');
+                    });
             })
-            ->orWhere(function ($inner) {
-                $inner->where('listo_entrega', true)
+                ->orWhere(function ($inner) {
+                    $inner->where('listo_entrega', true)
                         ->whereDoesntHave('parking');
-            });
+                });
         });
         if ($request->filled('busqueda')) {
             $busqueda = $request->input('busqueda');
@@ -55,28 +55,28 @@ class LavaderoController extends Controller
 
         $huboCambios = false;
 
-        if($request->has('sucio') && $vehiculo->sucio){
+        if ($request->has('sucio') && $vehiculo->sucio) {
             $vehiculo->sucio = false;
             $acciones[] = "Vehiculo limpiado";
             $observaciones .= 'El vehiculo fue limpiado.<br>';
             $huboCambios = true;
         }
-        if($request->has('sin_gasolina') && $vehiculo->sin_gasolina){
+        if ($request->has('sin_gasolina') && $vehiculo->sin_gasolina) {
             $vehiculo->sin_gasolina = false;
             $acciones[] = 'Vehiculo repostado';
             $observaciones .= 'Se lleno el deposito.<br>';
             $huboCambios = true;
         };
-        if(!$vehiculo->sucio && !$vehiculo->sin_gasolina){
+        if (!$vehiculo->sucio && !$vehiculo->sin_gasolina) {
             $vehiculo->listo_entrega = true;
             $observaciones .= 'Vehiculo listo para entregar<br>';
 
-            if($request->has('plaza_id') && $request->plaza_id){
-                if($vehiculo->estado === 'reparado'){
+            if ($request->has('plaza_id') && $request->plaza_id) {
+                if ($vehiculo->estado === 'reparado') {
                     $vehiculo->estado = 'devuelto';
                 }
-            } else{
-                if($vehiculo->estado === 'devuelto'){
+            } else {
+                if ($vehiculo->estado === 'devuelto') {
                     $vehiculo->estado = 'reparado';
                 }
                 $observaciones .= 'Sin plaza asignada<br>';
@@ -86,18 +86,22 @@ class LavaderoController extends Controller
         //$vehiculo->save();
 
         if($request->has('plaza_id') && $request->plaza_id){
+            if($vehiculo->sucio || $vehiculo->sin_gasolina){
+                return redirect()->route('lavadero.index')->with('Error','No puedes asignar una plaza si el vehiculo no esta limpio y repostado');
+            }
             $plaza = Parking::find($request->plaza_id);
-            if($plaza && !$plaza->vehiculo_id){
+            if ($plaza && !$plaza->vehiculo_id) {
                 $plaza->vehiculo_id = $vehiculo->id;
                 $plaza->save();
 
                 //$acciones[] = 'Aparcado en plaza';
-                $observaciones .= 'Coche aparcado en la plaza #'. $plaza->id . '<br>';
+                $observaciones .= 'Coche aparcado en la plaza #' . $plaza->id . '<br>';
                 $huboCambios = true;
             }
         }
+        
 
-        if($huboCambios){
+        if ($huboCambios) {
             $vehiculo->save();
 
             HistorialMovimiento::create([
@@ -106,9 +110,9 @@ class LavaderoController extends Controller
                 'accion' => 'Actualizado desde Lavadero',
                 'observaciones' => $observaciones,
             ]);
-            return redirect()->route('lavadero.index')->with('Hecho','Vehiculo actualizado');
-        }else{
-            return redirect()->back()->with('Error','No se realizo ninguna accion');
+            return redirect()->route('lavadero.index')->with('Hecho', 'Vehiculo actualizado');
+        } else {
+            return redirect()->back()->with('Error', 'No se realizo ninguna accion');
         }
     }
 }

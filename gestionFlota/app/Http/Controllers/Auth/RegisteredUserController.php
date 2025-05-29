@@ -31,22 +31,28 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
+
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'max:255', 'unique:users,email', 'regex:/^[\w\.\-]+@[\w\-]+\.[a-zA-Z]{2,}$/'],
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'confirmed',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/'
+                ],
             ],
-        ],
-        [
-            'password.regex' => 'La contraseña debe tener al menos una letra mayúscula, una minúscula y un número.',
-        ]);
+            [
+                'password.regex' => 'La contraseña debe tener al menos una letra mayúscula, una minúscula y un número.',
+                'email.regex' => 'El correo debe tener un formato válido como ejemplo@dominio.com',
+            ]
+        );
+        //dd($validator->errors()->all());
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -64,6 +70,21 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect($this->redirectTo($user));
+    }
+    protected function redirectTo($user)
+    {
+
+        if (!$user || !$user->role) {
+            return '/';
+        }
+
+        return match ($user->role->nombre) {
+            'admin' => '/admin/usuarios',
+            'oficina' => '/oficina',
+            'lavadero' => '/lavadero',
+            'mecanico' => '/mecanico',
+            default => '/',
+        };
     }
 }

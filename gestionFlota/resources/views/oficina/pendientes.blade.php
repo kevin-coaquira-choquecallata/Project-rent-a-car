@@ -4,7 +4,7 @@
 <div class="container">
     <div class="bg-light p-3 rounded mb-4 border d-flex justify-content-center align-items-center">
         <h1 class="mb-0 fw-bold text-dark display-6 d-flex align-items-center">
-            <i class="bi bi-bucket me-2 text-primary"></i> Vehículos pendientes (visual)
+            <i class="bi bi-bucket me-2 text-primary"></i> Vehículos pendientes
         </h1>
     </div>
 
@@ -12,7 +12,7 @@
         <div class="input-group">
             <input type="text" name="busqueda" class="form-control" placeholder="Buscar por matrícula, modelo o marca"
                 value="{{ request('busqueda') }}">
-            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+            <button class="btn btn-outline-primary" type="submit">Buscar</button>
         </div>
     </form>
 
