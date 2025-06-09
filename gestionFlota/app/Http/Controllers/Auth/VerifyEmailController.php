@@ -10,18 +10,30 @@ use Illuminate\Http\RedirectResponse;
 class VerifyEmailController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * Verifica el correo y redirige según el rol.
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        if (!$request->user()->hasVerifiedEmail()) {
+            if ($request->user()->markEmailAsVerified()) {
+                event(new Verified($request->user()));
+            }
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
-        }
+        return redirect($this->redirectTo($request->user()));
+    }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+    /**
+     * Devuelve la URL a redirigir según el rol del usuario.
+     */
+    protected function redirectTo($user): string
+    {
+        return match ($user->role->nombre ?? null) {
+            'admin' => '/admin/usuarios',
+            'oficina' => '/oficina',
+            'lavadero' => '/lavadero',
+            'mecanico' => '/mecanico',
+            default => '/sinrol',
+        };
     }
 }

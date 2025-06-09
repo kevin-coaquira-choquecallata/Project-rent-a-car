@@ -70,7 +70,8 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect($this->redirectTo($user));
+        //return redirect($this->redirectTo($user));
+        return redirect()->route('verification.notice');
     }
     protected function redirectTo($user)
     {
